@@ -5,13 +5,14 @@
     <PathDelim Value="\"/>
     <General>
       <SessionStorage Value="InProjectDir"/>
-      <Title Value="cuentas"/>
+      <Title Value="totales"/>
       <Scaled Value="True"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
       <XPManifest>
         <DpiAware Value="True"/>
       </XPManifest>
+      <Icon Value="0"/>
     </General>
     <BuildModes>
       <Item Name="Default" Default="True"/>
@@ -30,7 +31,7 @@
     </RequiredPackages>
     <Units>
       <Unit>
-        <Filename Value="cuentas.lpr"/>
+        <Filename Value="totales.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
@@ -46,7 +47,7 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="cuentas"/>
+      <Filename Value="totales"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>

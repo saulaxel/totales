@@ -1,4 +1,4 @@
-program cuentas;
+program totales;
 
 {$mode objfpc}{$H+}
 
