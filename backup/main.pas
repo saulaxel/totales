@@ -5,9 +5,10 @@ unit main;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Dialogs, StdCtrls, ExtCtrls, IniFiles;
+  Classes, SysUtils, Forms, Controls, Dialogs, StdCtrls, ExtCtrls, IniFiles, LCLType;
 
 function FormatoMoneda(Monto: Currency): string;
+function CalcularTermino(const texto: string): Currency;
 
 type
   TPanelCuenta = class(TPanel)
@@ -17,6 +18,9 @@ type
     EditExpresion: TEdit;
     LabelValoresSimplificados: TLabel;
     constructor Create(AOwner: TComponent; const Nombre: string; OnDelete: TNotifyEvent); reintroduce;
+  private
+    procedure EditExpresionOnKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure EditExpresionOnKeyPress(Sender: TObject; var Key: char);
   end;
 
   { TFormPrincipal }
@@ -57,6 +61,43 @@ begin
   Result := FormatCurr('$#,##0.00', Monto);
 end;
 
+function CalcularTermino(const texto: string): Currency;
+var
+  partes: TStringArray;
+  a, b: Currency;
+begin
+  Result := 0; // Valor por defecto si algo falla
+
+  if Trim(texto) = '' then Exit;
+
+  // Formato "real*real"
+  if Pos('*', texto) > 0 then
+  begin
+    partes := texto.Split(['*']);
+    if Length(partes) <> 2 then Exit;
+    if not TryStrToCurr(Trim(partes[0]), a) then Exit;
+    if not TryStrToCurr(Trim(partes[1]), b) then Exit;
+    Result := a * b;
+    Exit;
+  end;
+
+  // Formato "real/real"
+  if Pos('/', texto) > 0 then
+  begin
+    partes := texto.Split(['/']);
+    if Length(partes) <> 2 then Exit;
+    if not TryStrToCurr(Trim(partes[0]), a) then Exit;
+    if not TryStrToCurr(Trim(partes[1]), b) then Exit;
+    if b = 0 then Exit;
+    Result := a / b;
+    Exit;
+  end;
+
+  // Formato "real"
+  if not TryStrToCurr(Trim(texto), Result) then
+    Result := 0;
+end;
+
 { TPanelCuenta }
 
 constructor TPanelCuenta.Create(AOwner: TComponent; const Nombre: string; OnDelete: TNotifyEvent);
@@ -84,12 +125,15 @@ begin
   BtnEliminar.Left := LabelCuenta.Left + LabelCuenta.Width + TamFuente;
   BtnEliminar.Anchors := [akTop, akLeft];
   BtnEliminar.OnClick := OnDelete;
+  BtnEliminar.TabStop := False;
 
   EditExpresion := TEdit.Create(Self);
   EditExpresion.Parent := Self;
   EditExpresion.Left := TamFuente;
   EditExpresion.Top := TamFuente * 3;
   EditExpresion.Anchors := [akLeft, akTop, akRight];
+  EditExpresion.OnKeyDown := @EditExpresionOnKeyDown;
+  EditExpresion.OnKeyPress := @EditExpresionOnKeyPress;
 
   LabelValoresSimplificados := TLabel.Create(Self);
   LabelValoresSimplificados.Parent := Self;
@@ -97,6 +141,27 @@ begin
   LabelValoresSimplificados.Left := TamFuente;
   LabelValoresSimplificados.Top := TamFuente * 5;
 end;
+
+
+procedure TPanelCuenta.EditExpresionOnKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Key = VK_RETURN then  // Enter
+  begin
+    Key := 0;              // cancela el comportamiento por defecto
+    with (Sender as TEdit) do
+    begin
+      SelText := '   ';
+      SelStart := Length(Text);
+    end;
+  end;
+end;
+
+procedure TPanelCuenta.EditExpresionOnKeyPress(Sender: TObject; var Key: char);
+begin
+  if Key = '+' then
+    Key := ' ';
+end;
+
 
 { TFormPrincipal }
 
@@ -182,7 +247,7 @@ var
   PanelCuenta: TPanelCuenta;
   valores: TStringList;
   ValoresSimplificados: string;
-  subtotal, total: Currency;
+  termino, subtotal, total: Currency;
 begin
   total := 0;
   MemoResultados.Clear;
@@ -195,6 +260,7 @@ begin
       PanelCuenta := TPanelCuenta(ScrollBoxCuentas.Controls[i]);
       subtotal := 0;
       valores := TStringList.Create;
+      ValoresSimplificados := '';
       try
         valores.Delimiter := ' ';
         valores.StrictDelimiter := True;
@@ -202,10 +268,12 @@ begin
 
         for v := 0 to valores.Count - 1 do
         begin
-          subtotal += StrToCurrDef(valores[v], 0);
+          termino := CalcularTermino(valores[v]);
+          if termino <> 0 then
+            ValoresSimplificados := ValoresSimplificados + ' ' + CurrToStr(termino);
+          subtotal += termino;
         end;
 
-        ValoresSimplificados := valores.DelimitedText;
         PanelCuenta.LabelValoresSimplificados.Caption := ValoresSimplificados;
 
       finally

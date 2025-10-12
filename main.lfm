@@ -743,7 +743,7 @@ object FormPrincipal: TFormPrincipal
       Top = 1
       Width = 256
       Align = alLeft
-      Caption = 'Agregar Cuenta'
+      Caption = '&Agregar Cuenta'
       TabOrder = 0
       OnClick = BtnAgregarCuentaClick
     end
@@ -753,7 +753,7 @@ object FormPrincipal: TFormPrincipal
       Top = 1
       Width = 256
       Align = alLeft
-      Caption = 'Otro Cálculo'
+      Caption = '&Otro Cálculo'
       TabOrder = 1
       OnClick = BtnCalcularNuevoTotalClick
     end
