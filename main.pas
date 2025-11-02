@@ -5,7 +5,8 @@ unit main;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Dialogs, StdCtrls, ExtCtrls, IniFiles;
+  Classes, SysUtils, Forms, Controls, Dialogs, StdCtrls, ExtCtrls, IniFiles,
+  FileUtil;
 
 function FormatoMoneda(Monto: Currency): string;
 function CalcularTermino(const texto: string): Currency;
@@ -17,7 +18,7 @@ type
     BtnEliminar: TButton;
     EditExpresion: TEdit;
     LabelValoresSimplificados: TLabel;
-    constructor Create(AOwner: TComponent; const Nombre: string; OnDelete: TNotifyEvent); reintroduce;
+    constructor Create(AOwner: TComponent; const Nombre: string; OnDelete: TNotifyEvent; OnRename: TNotifyEvent); reintroduce;
   private
     procedure EditExpresionOnKeyPress(Sender: TObject; var Key: char);
   end;
@@ -39,6 +40,7 @@ type
   private
     FIniFile: TIniFile;
     procedure AgregarCuenta(const Nombre: string = ''; const Valores: string = '');
+    procedure RenombrarCuenta(Sender: TObject);
     procedure EditValoresRedimensionar;
     procedure CalcularTotales;
     procedure EditValoresOnChange(Sender: TObject);
@@ -99,7 +101,7 @@ end;
 
 { TPanelCuenta }
 
-constructor TPanelCuenta.Create(AOwner: TComponent; const Nombre: string; OnDelete: TNotifyEvent);
+constructor TPanelCuenta.Create(AOwner: TComponent; const Nombre: string; OnDelete: TNotifyEvent; OnRename: TNotifyEvent);
 begin
   inherited Create(AOwner);
   TamFuente := FormPrincipal.Font.Size;
@@ -114,6 +116,7 @@ begin
   LabelCuenta.Caption := Nombre;
   LabelCuenta.Left := TamFuente;
   LabelCuenta.Top := TamFuente;
+  LabelCuenta.OnDblClick := OnRename;
 
   BtnEliminar := TButton.Create(Self);
   BtnEliminar.Parent := Self;
@@ -158,7 +161,11 @@ end;
 { TFormPrincipal }
 
 procedure TFormPrincipal.FormCreate(Sender: TObject);
+var
+  DirDatos: string;
 begin
+  Caption := 'Totales';
+
   FormatSettings.DecimalSeparator := '.';
   FormatSettings.ThousandSeparator := ',';
   DefaultFormatSettings.DecimalSeparator := '.';
@@ -169,7 +176,9 @@ begin
   PanelResultados.Height := TamFuente * 12;
 
   // Archivo de configuración
-  FIniFile := TIniFile.Create(ExtractFilePath(Application.ExeName) + 'cuentas.ini');
+  DirDatos := GetAppConfigDir(False); // Carpeta para datos de app multiplataforma
+  ForceDirectories(DirDatos);
+  FIniFile := TIniFile.Create(IncludeTrailingPathDelimiter(DirDatos) + 'cuentas.ini');
   CargarCuentas;
 end;
 
@@ -190,7 +199,7 @@ begin
   else
     Etiqueta := Nombre;
 
-  NuevaCuenta := TPanelCuenta.Create(ScrollBoxCuentas, Etiqueta, @EliminarCuenta);
+  NuevaCuenta := TPanelCuenta.Create(ScrollBoxCuentas, Etiqueta, @EliminarCuenta, @RenombrarCuenta);
   NuevaCuenta.Parent := ScrollBoxCuentas;
   NuevaCuenta.Top := ScrollBoxCuentas.ControlCount * (7 * TamFuente);
   EditValoresRedimensionar;
@@ -201,6 +210,24 @@ begin
     NuevaCuenta.EditExpresion.Text := Valores;
 
   CalcularTotales;
+end;
+
+procedure TFormPrincipal.RenombrarCuenta(Sender: TObject);
+var
+  NuevaEtiqueta: string;
+  Lbl: TLabel;
+begin
+  if Sender is TLabel then
+  begin
+    Lbl := TLabel(Sender);
+    NuevaEtiqueta := InputBox('Renombrar cuenta', 'Nuevo nombre:', Lbl.Caption);
+    if (NuevaEtiqueta <> '') and (NuevaEtiqueta <> Lbl.Caption) then
+    begin
+      Lbl.Caption := NuevaEtiqueta;
+      GuardarCuentas;
+      CalcularTotales;
+    end;
+  end;
 end;
 
 procedure TFormPrincipal.EliminarCuenta(Sender: TObject);
@@ -313,10 +340,12 @@ end;
 
 procedure TFormPrincipal.GuardarCuentas;
 var
-  i: Integer;
+  i, NumCuentas: Integer;
   PanelCuenta: TPanelCuenta;
 begin
+  NumCuentas := ScrollBoxCuentas.ControlCount;
   FIniFile.EraseSection('Cuentas');
+  FIniFile.WriteString('Cuentas', 'Cantidad', IntToStr(NumCuentas));
 
   for i := 0 to ScrollBoxCuentas.ControlCount - 1 do
   begin

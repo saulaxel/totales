@@ -4,8 +4,8 @@ object FormPrincipal: TFormPrincipal
   Top = 84
   Width = 808
   Caption = 'FormPrincipal'
-  ClientHeight = 0
-  ClientWidth = 0
+  ClientHeight = 655
+  ClientWidth = 808
   Font.CharSet = ANSI_CHARSET
   Font.Height = -21
   Font.Pitch = fpVariable
@@ -697,11 +697,12 @@ object FormPrincipal: TFormPrincipal
   LCLVersion = '4.2.0.0'
   WindowState = wsMaximized
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   object ScrollBoxCuentas: TScrollBox
     Left = 0
-    Height = 0
-    Top = 0
-    Width = 0
+    Height = 535
+    Top = 40
+    Width = 808
     HorzScrollBar.Page = 1
     VertScrollBar.Page = 1
     Align = alClient
@@ -712,18 +713,18 @@ object FormPrincipal: TFormPrincipal
   object PanelResultados: TPanel
     Left = 0
     Height = 80
-    Top = -80
-    Width = 0
+    Top = 575
+    Width = 808
     Align = alBottom
     Caption = 'PanelResultados'
     ClientHeight = 80
-    ClientWidth = 0
+    ClientWidth = 808
     TabOrder = 1
     object MemoResultados: TMemo
-      Left = 0
+      Left = 1
       Height = 78
       Top = 1
-      Width = 0
+      Width = 806
       Align = alClient
       ScrollBars = ssAutoBoth
       TabOrder = 0
@@ -733,13 +734,13 @@ object FormPrincipal: TFormPrincipal
     Left = 0
     Height = 40
     Top = 0
-    Width = 0
+    Width = 808
     Align = alTop
     ClientHeight = 40
-    ClientWidth = 0
+    ClientWidth = 808
     TabOrder = 2
     object BtnAgregarCuenta: TButton
-      Left = 0
+      Left = 257
       Height = 38
       Top = 1
       Width = 256
@@ -749,7 +750,7 @@ object FormPrincipal: TFormPrincipal
       OnClick = BtnAgregarCuentaClick
     end
     object BtnCalcularNuevoTotal: TButton
-      Left = 0
+      Left = 1
       Height = 38
       Top = 1
       Width = 256
