@@ -27,7 +27,6 @@ PrivilegesRequiredOverridesAllowed=dialog
 OutputBaseFilename=Totales_Installer
 SolidCompression=yes
 WizardStyle=modern
-ArchitecturesInstallIn64BitMode=x86
 
 [Languages]
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"

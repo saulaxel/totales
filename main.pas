@@ -135,6 +135,7 @@ begin
   EditExpresion.Top := TamFuente * 3;
   EditExpresion.Anchors := [akLeft, akTop, akRight];
   EditExpresion.OnKeyPress := @EditExpresionOnKeyPress;
+  EditExpresion.AutoSelect := False;
 
   LabelValoresSimplificados := TLabel.Create(Self);
   LabelValoresSimplificados.Parent := Self;
